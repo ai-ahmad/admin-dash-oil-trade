@@ -19,7 +19,7 @@ const upload = multer({ storage });
 router.post('/create', upload.array('images', 5), async (req, res) => {
     const { title, description1, description2, date } = req.body;
     const images = req.files ? req.files.map(file => `/uploads/news/${file.filename}`) : [];
-
+   
     // Check if at least 1 image is uploaded and not more than 5
     if (images.length < 1) {
       return res.status(400).json({ message: 'At least 1 image is required' });
