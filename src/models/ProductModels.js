@@ -42,6 +42,10 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
     default: 0,
+  },
+  promotion: {
+    type: Boolean,
+    required: false,
   }
 });
 
