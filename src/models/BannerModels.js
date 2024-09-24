@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const BanerRouter = new mongoose.Schema({
+const BannerModels = new mongoose.Schema({
  
   image_url: {
     type: String,
@@ -14,6 +14,6 @@ const BanerRouter = new mongoose.Schema({
 
 });
 
-const Baner = mongoose.model('Baner', BanerRouter);
+const Baner = mongoose.model('Baner', BannerModels);
 
-module.exports = Product;
+module.exports = Baner;

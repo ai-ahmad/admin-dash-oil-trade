@@ -1,12 +1,20 @@
 const express = require('express');
 const multer = require('multer');
-const Baner = require('../models/Baner'); // Assuming your model is in 'models/Baner.js'
+const fs = require('fs');
+const path = require('path');
+const Banner = require('../models/BannerModels'); // Assuming your model is in 'models/Banner.js'
 const router = express.Router();
+
+// Ensure the 'uploads/Banner' directory exists
+const uploadDir = path.join(__dirname, '..', 'uploads', 'Banner');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, 'uploads/baner'); // Ensure this folder exists
+    cb(null, 'uploads/Banner'); // Ensure this folder exists
   },
   filename(req, file, cb) {
     const timestamp = Date.now();
@@ -16,83 +24,100 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// CREATE a new Baner
+// CREATE a new Banner
 router.post('/', upload.single('image'), async (req, res) => {
   const { description } = req.body;
-  const image_url = req.file ? `/uploads/baner/${req.file.filename}` : null;
+  const image_url = req.file ? `/uploads/Banner/${req.file.filename}` : null;
 
   if (!image_url || !description) {
     return res.status(400).json({ message: 'Image and description are required' });
   }
 
   try {
-    const newBaner = new Baner({ image_url, description });
-    await newBaner.save();
-    res.status(201).json({ message: 'Baner created successfully', baner: newBaner });
+    const newBanner = new Banner({ image_url, description });
+    await newBanner.save();
+    res.status(201).json({ message: 'Banner created successfully', Banner: newBanner });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating baner', error: error.message });
+    console.error('Error creating Banner:', error);
+    res.status(500).json({ message: 'Error creating Banner', error: error.message });
   }
 });
 
-// READ all Baners
+// READ all Banners
 router.get('/', async (req, res) => {
   try {
-    const baners = await Baner.find();
-    res.status(200).json(baners);
+    const Banners = await Banner.find();
+    res.status(200).json(Banners);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching baners', error: error.message });
+    console.error('Error fetching Banners:', error);
+    res.status(500).json({ message: 'Error fetching Banners', error: error.message });
   }
 });
 
-// READ a single Baner by ID
+// READ a single Banner by ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const baner = await Baner.findById(id);
-    if (!baner) {
-      return res.status(404).json({ message: 'Baner not found' });
+    const Banner = await Banner.findById(id);
+    if (!Banner) {
+      return res.status(404).json({ message: 'Banner not found' });
     }
-    res.status(200).json(baner);
+    res.status(200).json(Banner);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching baner', error: error.message });
+    console.error('Error fetching Banner:', error);
+    res.status(500).json({ message: 'Error fetching Banner', error: error.message });
   }
 });
 
-// UPDATE a Baner by ID
+// UPDATE a Banner by ID
 router.put('/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { description } = req.body;
-  const image_url = req.file ? `/uploads/baner/${req.file.filename}` : null;
+  const image_url = req.file ? `/uploads/Banner/${req.file.filename}` : undefined;
 
   try {
-    const updatedBaner = await Baner.findByIdAndUpdate(
+    const updatedBanner = await Banner.findByIdAndUpdate(
       id,
-      { image_url: image_url || undefined, description },
-      { new: true, omitUndefined: true } // only update fields provided
+      { image_url, description },
+      { new: true }
     );
 
-    if (!updatedBaner) {
-      return res.status(404).json({ message: 'Baner not found' });
+    if (!updatedBanner) {
+      return res.status(404).json({ message: 'Banner not found' });
     }
 
-    res.status(200).json({ message: 'Baner updated successfully', baner: updatedBaner });
+    res.status(200).json({ message: 'Banner updated successfully', Banner: updatedBanner });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating baner', error: error.message });
+    console.error('Error updating Banner:', error);
+    res.status(500).json({ message: 'Error updating Banner', error: error.message });
   }
 });
 
-// DELETE a Baner by ID
+// DELETE a Banner by ID
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedBaner = await Baner.findByIdAndDelete(id);
-    if (!deletedBaner) {
-      return res.status(404).json({ message: 'Baner not found' });
+    const Banner = await Banner.findById(id);
+    if (!Banner) {
+      return res.status(404).json({ message: 'Banner not found' });
     }
-    res.status(200).json({ message: 'Baner deleted successfully', baner: deletedBaner });
+
+    // Delete the associated image file
+    if (Banner.image_url) {
+      const filePath = path.join(__dirname, '..', Banner.image_url);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting file: ${filePath}`, err);
+        }
+      });
+    }
+
+    await Banner.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Banner deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting baner', error: error.message });
+    console.error('Error deleting Banner:', error);
+    res.status(500).json({ message: 'Error deleting Banner', error: error.message });
   }
 });
 
