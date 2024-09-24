@@ -16,22 +16,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Post route to create news
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/create', upload.array('images', 5), async (req, res) => {
     const { title, description1, description2, date } = req.body;
-    const image_url = req.file ? `/uploads/news/${req.file.filename}` : null;
-  
-    if (!image_url || !title || !date) {
-      return res.status(400).json({ message: 'Title, date, and image are required' });
+    const images = req.files ? req.files.map(file => `/uploads/news/${file.filename}`) : [];
+
+    // Check if at least 1 image is uploaded and not more than 5
+    if (images.length < 1) {
+      return res.status(400).json({ message: 'At least 1 image is required' });
     }
-  
+    
+    if (images.length > 5) {
+      return res.status(400).json({ message: 'You can upload a maximum of 5 images' });
+    }
+
+    if (!title || !date) {
+      return res.status(400).json({ message: 'Title and date are required' });
+    }
+
     try {
       const newNews = new News({
         title,
         description1,
         description2,
         date,
-        images: [image_url],
+        images, // Store the array of image URLs
       });
       await newNews.save();
       res.status(201).json({ message: 'News created successfully', news: newNews });

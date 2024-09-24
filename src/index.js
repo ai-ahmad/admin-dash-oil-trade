@@ -11,7 +11,7 @@ app.use(cors());
 app.use('/api/v1/cart', ProductRouter)
 app.use('/uploads', express.static('uploads'));
 app.use('/api/v1/admin', AdminRouter)
-app.use('/api/v1/news', NewsRouter)
+app.use('/api/v1/news', express.static('uploads'),NewsRouter)
 
 connectDB();
 
