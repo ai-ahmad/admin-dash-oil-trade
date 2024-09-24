@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-
 const ZayavkaSchemas = mongoose.Schema({
     name: {
         type: String,
