@@ -17,24 +17,33 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // CREATE Product
-router.post('/create', upload.single('image'), async (req, res) => {
-    const { name, category, rating, price, volume, description, discount,promotion } = req.body;
-    const image = req.file ? req.file.path : '';
+router.post('/create', upload.array('images', 5), async (req, res) => {
+    const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
+    
+    // Collect file paths for the images
+    const images = req.files ? req.files.map(file => file.path) : [];
+
     try {
-      const newProduct = new Product({ name, category, rating, price, volume, image, description, discount,promotion });
+      const newProduct = new Product({
+        name, 
+        category, 
+        rating, 
+        price, 
+        volume, 
+        stock, 
+        ruler, 
+        description, 
+        fidbek, 
+        image: images, // Store the array of image paths
+        discount_price,
+        promotion,
+        oils_type
+      });
+
       await newProduct.save();
       res.status(201).json({ message: 'Product created successfully', product: newProduct });
     } catch (error) {
       res.status(500).json({ message: 'Error creating product', error: error.message });
-    }
-  });
-  // READ all Products
-  router.get('/', async (req, res) => {
-    try {
-      const products = await Product.find();
-      res.status(200).json(products);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching products', error: error.message });
     }
   });
   

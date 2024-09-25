@@ -28,11 +28,7 @@ const productSchema = new mongoose.Schema({
     default: 0,
   },
   image: {
-    type: Array,
-    required: true,
-  },
-  category: {
-    type: String,
+    type: [String],  // Expecting multiple image paths
     required: true,
   },
   ruler: {
@@ -64,7 +60,6 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: false,
   }
-
 });
 
 const Product = mongoose.model('Product', productSchema);
