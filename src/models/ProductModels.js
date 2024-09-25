@@ -19,14 +19,23 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   volume: {
+    type: Array,
+    required: true,
+  },
+  stock: {
     type: Number,
     required: true,
+    default: 0,
   },
   image: {
     type: Array,
     required: true,
   },
   category: {
+    type: String,
+    required: true,
+  },
+  ruler: {
     type: String,
     required: true,
   },
@@ -38,7 +47,7 @@ const productSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
-  discount: {
+  discount_price: {
     type: String,
     required: false,
     default: 0,
@@ -46,7 +55,16 @@ const productSchema = new mongoose.Schema({
   promotion: {
     type: Boolean,
     required: false,
+  },
+  bestseller: {
+    type: Boolean,
+    required: false,
+  },
+  oils_type: {
+    type: String,
+    required: false,
   }
+
 });
 
 const Product = mongoose.model('Product', productSchema);
