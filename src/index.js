@@ -10,6 +10,7 @@ const ZayavkaRouter = require("./routes/ZayavkaRouter");
 const bannerRouter = require("./routes/BannerRouter");
 const OtzivRotuer = require("./routes/OtzivRouter");
 const CategoryRouter = require('./routes/CategoryRouter')
+const AnnonsRouter = require('./routes/AnnosRouter')
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -26,6 +27,7 @@ app.use('/api/v1/admin', AdminRouter);
 app.use('/api/v1/news', NewsRouter);
 app.use('/api/v1/otziv', OtzivRotuer)
 app.use('/api/v1/category', CategoryRouter);
+app.use('/api/v1/annons', AnnonsRouter)
 
 // Connect to MongoDB
 
