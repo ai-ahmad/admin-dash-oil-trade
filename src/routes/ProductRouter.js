@@ -59,6 +59,16 @@ router.post('/create', upload.array('images', 5), async (req, res) => {
     }
   });
   
+
+  router.get('/', async (req, res) => {
+    try {
+      const products = await Product.find();
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching products', error: error.message });
+    }
+  })
+
   // UPDATE Product by ID
   router.put('/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
