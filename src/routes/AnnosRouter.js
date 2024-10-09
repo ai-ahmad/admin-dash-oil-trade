@@ -66,7 +66,7 @@ router.get('/', async (req, res) => {
     try {
         const annos = await Annos.find();
         res.status(200).json(annos);
-    } catch (err) {
+    } catch (err) { 
         res.status(500).json({ message: err.message });
     }
 });
