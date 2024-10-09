@@ -1,3 +1,4 @@
+const { type } = require('express/lib/response');
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
@@ -59,6 +60,10 @@ const productSchema = new mongoose.Schema({
   oils_type: {
     type: String,
     required: false,
+  },
+  product_info_pdf: {
+    type: String,
+    required: true
   }
 });
 

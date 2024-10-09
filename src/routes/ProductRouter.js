@@ -1,103 +1,209 @@
 const express = require('express');
 const multer = require('multer');
-const Product = require('../models/ProductModels'); 
+const mongoose = require('mongoose');
+
+// Define the product schema
+const productSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    required: true,
+  },
+  rating: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  volume: {
+    type: Array,
+    required: true,
+  },
+  stock: {
+    type: Number,
+    required: true,   
+    default: 0,
+  },
+  image: {
+    type: [String],  // Expecting multiple image paths
+    required: true,
+  },
+  ruler: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  fidbek: {
+    type: Array,
+    required: false,
+  },
+  discount_price: {
+    type: String,
+    required: false,
+    default: 0,
+  },
+  promotion: {
+    type: Boolean,
+    required: false,
+  },
+  bestseller: {
+    type: Boolean,
+    required: false,
+  },
+  oils_type: {
+    type: String,
+    required: false,
+  },
+  product_info_pdf: {
+    type: String,
+    required: true,  // PDF file path
+  }
+});
+
+// Create the Product model
+const Product = mongoose.model('Product', productSchema);
 
 const router = express.Router();
 
+// Multer configuration to handle both image and PDF uploads
 const storage = multer.diskStorage({
-    destination(req, file, cb) {
-      cb(null, 'uploads/cart'); 
-    },
-    filename(req, file, cb) {
-      const timestamp = Date.now(); 
-      cb(null, `${timestamp}-${file.originalname}`);
-    },
-  });
+  destination(req, file, cb) {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, 'uploads/pdf');  // Directory for PDFs
+    } else {
+      cb(null, 'uploads/cart');  // Directory for images
+    }
+  },
+  filename(req, file, cb) {
+    const timestamp = Date.now();
+    cb(null, `${timestamp}-${file.originalname}`);
+  },
+});
 
 const upload = multer({ storage });
 
 // CREATE Product
-router.post('/create', upload.array('images', 5), async (req, res) => {
-    const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
-    
-    // Collect file paths for the images
-    const images = req.files ? req.files.map(file => file.path) : [];
+router.post('/create', upload.fields([{ name: 'images', maxCount: 5 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
+  const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
 
-    try {
-      const newProduct = new Product({
+  // Collect file paths for the images and PDF
+  const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
+  const product_info_pdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : '';
+
+  try {
+    const newProduct = new Product({
+      name, 
+      category, 
+      rating, 
+      price, 
+      volume, 
+      stock, 
+      ruler, 
+      description, 
+      fidbek, 
+      image: images,  // Store the array of image paths
+      product_info_pdf,  // Store the PDF path
+      discount_price,
+      promotion,
+      oils_type
+    });
+
+    await newProduct.save();
+    res.status(201).json({ message: 'Product created successfully', product: newProduct });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating product', error: error.message });
+  }
+});
+
+// READ a single Product by ID
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching product', error: error.message });
+  }
+});
+
+// READ all Products
+router.get('/', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching products', error: error.message });
+  }
+});
+
+// UPDATE Product by ID
+router.put('/:id', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
+  const { id } = req.params;
+  const { name, category, rating, price, volume, description, discount } = req.body;
+
+  // Handle file uploads for both image and PDF
+  const image = req.files['image'] ? req.files['image'][0].path : null;
+  const product_info_pdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : null;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { 
         name, 
         category, 
         rating, 
         price, 
         volume, 
-        stock, 
-        ruler, 
+        image: image || undefined,  // Only update image if provided
+        product_info_pdf: product_info_pdf || undefined,  // Only update PDF if provided
         description, 
-        fidbek, 
-        image: images, // Store the array of image paths
-        discount_price,
-        promotion,
-        oils_type
-      });
+        discount 
+      },
+      { new: true, omitUndefined: true }  // `omitUndefined` ensures only provided fields are updated
+    );
+    if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
+    res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating product', error: error.message });
+  }
+});
 
-      await newProduct.save();
-      res.status(201).json({ message: 'Product created successfully', product: newProduct });
-    } catch (error) {
-      res.status(500).json({ message: 'Error creating product', error: error.message });
-    }
-  });
-  
-  // READ a single Product by ID
-  router.get('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-      const product = await Product.findById(id);
-      if (!product) return res.status(404).json({ message: 'Product not found' });
-      res.status(200).json(product);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching product', error: error.message });
-    }
-  });
-  
+// DELETE Product by ID
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedProduct = await Product.findByIdAndDelete(id);
+    if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
+    res.status(200).json({ message: 'Product deleted successfully', product: deletedProduct });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting product', error: error.message });
+  }
+});
 
-  router.get('/', async (req, res) => {
-    try {
-      const products = await Product.find();
-      res.status(200).json(products);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching products', error: error.message });
+// FILTER Products by Category
+router.get('/filters', async (req, res) => {
+  const { category_name } = req.query;  // Get from query string
+  try {
+    let products;
+    if (category_name && category_name !== 'all') {
+      products = await Product.find({ category: category_name });
+    } else {
+      products = await Product.find();  // Return all products if no filter
     }
-  })
+    res.status(200).json({ data: products });
+  } catch (err) {
+    res.status(500).json({ message: 'Error getting data', error: err.message });
+  }
+});
 
-  // UPDATE Product by ID
-  router.put('/:id', upload.single('image'), async (req, res) => {
-    const { id } = req.params;
-    const { name, category, rating, price, volume, description, discount } = req.body;
-    const image = req.file ? req.file.path : null;
-  
-    try {
-      const updatedProduct = await Product.findByIdAndUpdate(
-        id,
-        { name, category, rating, price, volume, image: image || undefined, description, discount },
-        { new: true, omitUndefined: true } // `omitUndefined` ensures only provided fields are updated
-      );
-      if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
-      res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
-    } catch (error) {
-      res.status(500).json({ message: 'Error updating product', error: error.message });
-    }
-  });
-  
-  // DELETE Product by ID
-  router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-      const deletedProduct = await Product.findByIdAndDelete(id);
-      if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
-      res.status(200).json({ message: 'Product deleted successfully', product: deletedProduct });
-    } catch (error) {
-      res.status(500).json({ message: 'Error deleting product', error: error.message });
-    }
-  });
-  
-  module.exports = router;
+module.exports = router;
