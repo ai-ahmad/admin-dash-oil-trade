@@ -1,82 +1,83 @@
 const express = require('express');
 const multer = require('multer');
 const mongoose = require('mongoose');
-const Contact =require('../models/ContactModels')
+const Contact = require('../models/ContactModels');
 
 const router = express.Router();
 
 const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    if (file.mimetype === 'application/contact') {
-      cb(null, 'uploads/contact'); 
-    } else {
-      cb(null, 'uploads/contact');  
-    }
-  },
-  filename(req, file, cb) {
-    const timestamp = Date.now();
-    cb(null, `${timestamp}-${file.originalname}`);
-  },
+    destination(req, file, cb) {
+        cb(null, 'uploads/contact'); // Set a single destination
+    },
+    filename(req, file, cb) {
+        const timestamp = Date.now();
+        cb(null, `${timestamp}-${file.originalname}`);
+    },
 });
 
 const upload = multer({ storage });
 
+// Create a new contact
 router.post('/create', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
-  const { name,description } = req.body;
-  const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
-  try {
-    const Contact = new Contact({
-      name: name,
-      description: description,
-      image: images, 
-    });
-    await Contact.save();
-    res.status(201).json({ message: 'Product created successfully', Contact: Contact });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating contact', error: error.message });
-  }
+    const { name, description } = req.body;
+    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
+    try {
+        const newContact = new Contact({
+            name: name,
+            description: description,
+            images: images, // Use 'images' for the field name
+        });
+        await newContact.save();
+        res.status(201).json({ message: 'Contact created successfully', contact: newContact });
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating contact', error: error.message });
+    }
 });
 
+// Get all contacts
 router.get('/', async (req, res) => {
-  try {
-    const Contact = await Contact.find()
-    if (!Contact) return res.status(404).json({ message: 'contact not found' });
-    res.status(200).json(product);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching product', error: error.message });
-  }
+    try {
+        const contacts = await Contact.find();
+        if (!contacts.length) return res.status(404).json({ message: 'No contacts found' });
+        res.status(200).json(contacts);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching contacts', error: error.message });
+    }
 });
 
+// Update a contact by ID
+router.put('/:id', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
 
-router.put('/:id', upload.fields([{ name: 'image', maxCount: 6 }]), async (req, res) => {
-  const { id } = req.params;
-  const { name,description } = req.body;
-  const image = req.files['image'] ? req.files['image'][0].path : null;
-  try {
-    const updateZakaz = await Zakaz.findByIdAndUpdate(
-      id,
-      { 
-        name,
-        description
-      },
-      { new: true, omitUndefined: true }  
-    );
-    if (!updateZakaz) return res.status(404).json({ message: 'Contact not found' });
-    res.status(200).json({ message: 'Contact updated successfully', zakaz: updateZakaz });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating Contact', error: error.message });
-  }
+    try {
+        const updatedContact = await Contact.findByIdAndUpdate(
+            id,
+            { 
+                name,
+                description,
+                images: images.length ? images : undefined, // Update images only if they exist
+            },
+            { new: true, omitUndefined: true }  
+        );
+        if (!updatedContact) return res.status(404).json({ message: 'Contact not found' });
+        res.status(200).json({ message: 'Contact updated successfully', contact: updatedContact });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating contact', error: error.message });
+    }
 });
 
+// Delete a contact by ID
 router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const Contact = await Zakaz.findByIdAndDelete(id);
-    if (!Contact) return res.status(404).json({ message: 'Contact not found' });
-    res.status(200).json({ message: 'Product deleted successfully', Contact: Contact });
-  } catch (error) {
-    res.status(500).json({ message: 'Error deleting product', error: error.message });
-  }
+    const { id } = req.params;
+    try {
+        const deletedContact = await Contact.findByIdAndDelete(id);
+        if (!deletedContact) return res.status(404).json({ message: 'Contact not found' });
+        res.status(200).json({ message: 'Contact deleted successfully', contact: deletedContact });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting contact', error: error.message });
+    }
 });
 
 module.exports = router;
