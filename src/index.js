@@ -12,6 +12,10 @@ const OtzivRotuer = require("./routes/OtzivRouter");
 const CategoryRouter = require('./routes/CategoryRouter')
 const AnnonsRouter = require('./routes/AnnosRouter')
 const CursRouter = require('./routes/CursRouter')
+const ZakazRouter = require('./routes/ZakazRouter')
+const AboutRouter = require('./routes/AboutRouter')
+const ContactRouter = require('./routes/ContactRouter')
+const DastavkaRouter = require('./routes/DastavkaRouter')
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -30,7 +34,10 @@ app.use('/api/v1/otziv', OtzivRotuer)
 app.use('/api/v1/category', CategoryRouter);
 app.use('/api/v1/curs', CursRouter)
 app.use('/api/v1/annons', AnnonsRouter)
-
+app.use('/api/v1/about', AboutRouter)
+app.use('/api/v1/contact', ContactRouter)
+app.use('/api/v1/zakaz', ZakazRouter)
+app.use('/api/v1/dastavka', DastavkaRouter)
 // Connect to MongoDB
 
 // Start the server
