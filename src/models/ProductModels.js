@@ -1,5 +1,4 @@
-const { type } = require('express/lib/response');
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const productSchema = new mongoose.Schema({
   name: {
@@ -25,12 +24,18 @@ const productSchema = new mongoose.Schema({
   },
   stock: {
     type: Number,
-    required: true,   
+    required: true,
     default: 0,
   },
   image: {
-    type: [String],  // Expecting multiple image paths
-    required: true,
+    main_images: {
+      type: [String],  // Array of image paths for main images
+      required: true,
+    },
+    all_images: {
+      type: [String],  // Array of image paths for all images
+      required: true,
+    },
   },
   ruler: {
     type: String,
@@ -63,10 +68,8 @@ const productSchema = new mongoose.Schema({
   },
   product_info_pdf: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const Product = mongoose.model('Product', productSchema);
-
-module.exports = Product;

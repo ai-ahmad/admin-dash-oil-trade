@@ -18,21 +18,41 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Create a new Dastavka entry
-router.post('/create', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
-    const { name, description } = req.body;
-    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
+// CREATE Product
+router.post('/create', upload.fields([{ name: 'main_images', maxCount: 1 }, { name: 'all_images', maxCount: 5 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
+    const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
+    const main_images = req.files['main_images'] ? req.files['main_images'].map(file => file.path) : [];
+    const all_images = req.files['all_images'] ? req.files['all_images'].map(file => file.path) : [];
+    const product_info_pdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : '';
+  
     try {
-        const newDastavka = new Dastavka({
-            name,
-            description,
-            images, // Use 'images' for consistency
-        });
-        await newDastavka.save();
-        res.status(201).json({ message: 'Dastavka created successfully', dastavka: newDastavka });
+      const newProduct = new Product({
+        name, 
+        category, 
+        rating, 
+        price, 
+        volume, 
+        stock, 
+        ruler, 
+        description, 
+        fidbek, 
+        image: {
+          main_images,
+          all_images
+        },
+        product_info_pdf,  
+        discount_price,
+        promotion,
+        oils_type
+      });
+  
+      await newProduct.save();
+      res.status(201).json({ message: 'Product created successfully', product: newProduct });
     } catch (error) {
-        res.status(500).json({ message: 'Error creating dastavka', error: error.message });
+      res.status(500).json({ message: 'Error creating product', error: error.message });
     }
-});
+  });
+  
 
 // Get all Dastavka entries
 router.get('/', async (req, res) => {
