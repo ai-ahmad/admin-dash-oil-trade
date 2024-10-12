@@ -5,7 +5,6 @@ const Product =require('../models/ProductModels')
 
 const router = express.Router();
 
-// Multer configuration to handle both image and PDF uploads
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     if (file.mimetype === 'application/pdf') {
