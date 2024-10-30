@@ -19,20 +19,26 @@
         }
     });
 
+// controllers/adminController.js
+const Admin = require('../models/Admin');
 
-    router.post('/create-partner', async (req, res) => {
+const createAdmin = async (req, res) => {
+    try {
         const { username, password, role } = req.body;
-        try {
-            const hashedPassword = await bcrypt.hash(password, 7);
-            if (!hashedPassword) {
-                return res.status(500).json({ message: 'Error hashing password' });
-            }
 
-            const newAdmin = await AdminModels.create({ username, password: hashedPassword, role });
-            res.status(201).json({ message: 'Admin created successfully', admin: newAdmin });
-        } catch (err) {
-            res.status(500).json({ message: 'Error creating admin', error: err.message });
+        if (!username || !password || !role) {
+            return res.status(400).json({ message: 'All fields (username, password, role) are required.' });
         }
-    });
+
+        const admin = new Admin({ username, password, role });
+        await admin.save();
+
+        res.status(201).json({ message: 'Admin created successfully', admin: { username: admin.username, role: admin.role } });
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating admin', error: error.message });
+    }
+};
+
+module.exports = { createAdmin };
 
     module.exports = router;
