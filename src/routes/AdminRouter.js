@@ -19,8 +19,6 @@
         }
     });
 
-// controllers/adminController.js
-const Admin = require('../models/Admin');
 
 const createAdmin = async (req, res) => {
     try {
@@ -30,7 +28,7 @@ const createAdmin = async (req, res) => {
             return res.status(400).json({ message: 'All fields (username, password, role) are required.' });
         }
 
-        const admin = new Admin({ username, password, role });
+        const admin = new AdminModels({ username, password, role });
         await admin.save();
 
         res.status(201).json({ message: 'Admin created successfully', admin: { username: admin.username, role: admin.role } });
