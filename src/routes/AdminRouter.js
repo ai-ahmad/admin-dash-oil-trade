@@ -20,7 +20,7 @@
     });
 
 
-const createAdmin = async (req, res) => {
+router.post("/create-partnyor",async (req, res) => {
     try {
         const { username, password, role } = req.body;
 
@@ -35,8 +35,7 @@ const createAdmin = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error creating admin', error: error.message });
     }
-};
+});
 
-module.exports = { createAdmin };
 
-    module.exports = router;
+module.exports = router;
