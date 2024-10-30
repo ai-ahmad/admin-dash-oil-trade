@@ -68,7 +68,7 @@ const productSchema = new mongoose.Schema({
   },
   product_info_pdf: {
     type: String,
-    required: true,
+    required: false,
   },
 });
 

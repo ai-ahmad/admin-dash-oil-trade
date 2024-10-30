@@ -21,14 +21,14 @@
 
 
     router.post('/create-partner', async (req, res) => {
-        const { name, password, role } = req.body;
+        const { username, password, role } = req.body;
         try {
             const hashedPassword = await bcrypt.hash(password, 7);
             if (!hashedPassword) {
                 return res.status(500).json({ message: 'Error hashing password' });
             }
 
-            const newAdmin = await AdminModels.create({ name, password: hashedPassword, role });
+            const newAdmin = await AdminModels.create({ username, password: hashedPassword, role });
             res.status(201).json({ message: 'Admin created successfully', admin: newAdmin });
         } catch (err) {
             res.status(500).json({ message: 'Error creating admin', error: err.message });
