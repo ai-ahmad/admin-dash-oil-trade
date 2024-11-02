@@ -18,20 +18,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Create a new Zakaz entry
-router.post('/create', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
-    const { name, description } = req.body;
-    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
-    try {
-        const newZakaz = new Zakaz({
-            name,
-            description,
-            images, // Corrected to 'images' to match the model
-        });
-        await newZakaz.save();
-        res.status(201).json({ message: 'Zakaz created successfully', zakaz: newZakaz });
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating zakaz', error: error.message });
+router.post('/create', upload.single('images'), async (req, res) => {
+  const { name, description } = req.body;
+  const image = req.file ? req.file.path : null;
+
+  try {
+    if (!name || !description || !image) {
+      return res.status(400).json({ message: "Fields 'name', 'description', and one image are required" });
     }
+
+    const newZakaz = new Zakaz({ name, description, images: [image] });
+    await newZakaz.save();
+    res.status(201).json({ message: 'Zakaz created successfully', zakaz: newZakaz });
+  } catch (error) {
+    console.error('Error creating zakaz:', error);
+    res.status(500).json({ message: 'Error creating zakaz', error: error.message });
+  }
 });
 
 // Get all Zakaz entries

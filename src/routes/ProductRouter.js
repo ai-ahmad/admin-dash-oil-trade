@@ -1,18 +1,14 @@
 const express = require('express');
 const multer = require('multer');
-const mongoose = require('mongoose');
-const Product =require('../models/ProductModels')
-
-
-
+const Product = require('../models/ProductModels');
 const router = express.Router();
 
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     if (file.mimetype === 'application/pdf') {
-      cb(null, 'uploads/pdf');  // Directory for PDFs
+      cb(null, 'uploads/pdf');
     } else {
-      cb(null, 'uploads/cart');  // Directory for images
+      cb(null, 'uploads/cart');
     }
   },
   filename(req, file, cb) {
@@ -24,37 +20,50 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // CREATE Product
-router.post('/create', upload.fields([{ name: 'images', maxCount: 5 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
-  const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
+router.post(
+  '/create',
+  upload.fields([
+    { name: 'main_images', maxCount: 5 }, // Separate field for main images
+    { name: 'all_images', maxCount: 10 }, // Separate field for all images
+    { name: 'product_info_pdf', maxCount: 1 }
+  ]),
+  async (req, res) => {
+    const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
 
-  // Collect file paths for the images and PDF
-  const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
-  const product_info_pdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : '';
+    // Collect file paths for main_images, all_images, and PDF
+    const main_images = req.files['main_images'] ? req.files['main_images'].map(file => file.path) : [];
+    const all_images = req.files['all_images'] ? req.files['all_images'].map(file => file.path) : [];
+    const product_info_pdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : '';
 
-  try {
-    const newProduct = new Product({
-      name, 
-      category, 
-      rating, 
-      price, 
-      volume, 
-      stock, 
-      ruler, 
-      description, 
-      fidbek, 
-      image: images,  // Store the array of image paths
-      product_info_pdf,  // Store the PDF path
-      discount_price,
-      promotion,
-      oils_type
-    });
+    try {
+      const newProduct = new Product({
+        name,
+        category,
+        rating,
+        price,
+        volume,
+        stock,
+        ruler,
+        description,
+        fidbek,
+        image: {
+          main_images,  // Array of main image paths
+          all_images,   // Array of all image paths
+        },
+        product_info_pdf,
+        discount_price,
+        promotion,
+        oils_type,
+      });
 
-    await newProduct.save();
-    res.status(201).json({ message: 'Product created successfully', product: newProduct });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating product', error: error.message });
+      await newProduct.save();
+      res.status(201).json({ message: 'Product created successfully', product: newProduct });
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(500).json({ message: 'Error creating product', error: error.message });
+    }
   }
-});
+);
 
 // READ a single Product by ID
 router.get('/:id', async (req, res) => {

@@ -49,7 +49,8 @@ router.post('/create', upload.fields([{ name: 'main_images', maxCount: 1 }, { na
       await newProduct.save();
       res.status(201).json({ message: 'Product created successfully', product: newProduct });
     } catch (error) {
-      res.status(500).json({ message: 'Error creating product', error: error.message });
+        res.status(500).json({ message: 'Error creating product', error: error.message });
+
     }
   });
   
