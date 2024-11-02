@@ -22,6 +22,9 @@ app.use(express.json());
 app.use(cors());
 connectDB();
 
+
+
+
 // Serving static files from 'uploads' directory
 app.use('/uploads', express.static('uploads'));
 
