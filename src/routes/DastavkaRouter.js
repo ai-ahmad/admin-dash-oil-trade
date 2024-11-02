@@ -18,42 +18,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Create a new Dastavka entry
-// CREATE Product
-router.post('/create', upload.fields([{ name: 'main_images', maxCount: 1 }, { name: 'all_images', maxCount: 5 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
-    const { name, category, rating, price, volume, description, discount_price, promotion, stock, ruler, oils_type, fidbek } = req.body;
-    const main_images = req.files['main_images'] ? req.files['main_images'].map(file => file.path) : [];
-    const all_images = req.files['all_images'] ? req.files['all_images'].map(file => file.path) : [];
-    const product_info_pdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : '';
-  
-    try {
-      const newProduct = new Product({
-        name, 
-        category, 
-        rating, 
-        price, 
-        volume, 
-        stock, 
-        ruler, 
-        description, 
-        fidbek, 
-        image: {
-          main_images,
-          all_images
-        },
-        product_info_pdf,  
-        discount_price,
-        promotion,
-        oils_type
-      });
-  
-      await newProduct.save();
-      res.status(201).json({ message: 'Product created successfully', product: newProduct });
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating product', error: error.message });
+router.post('/create', upload.array('images', 5), async (req, res) => {
+    const { name, description } = req.body;
+    const images = req.files ? req.files.map(file => file.path) : [];
 
+    try {
+        if (!name || !description || images.length === 0) {
+            return res.status(400).json({ message: "Fields 'name', 'description', and at least one image are required" });
+        }
+
+        const newDastavka = new Dastavka({ name, description, images });
+        await newDastavka.save();
+        res.status(201).json({ message: 'Dastavka created successfully', dastavka: newDastavka });
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating Dastavka', error: error.message });
     }
-  });
-  
+});
 
 // Get all Dastavka entries
 router.get('/', async (req, res) => {
@@ -62,20 +42,20 @@ router.get('/', async (req, res) => {
         if (!dastavkaList.length) return res.status(404).json({ message: 'No Dastavka found' });
         res.status(200).json(dastavkaList);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching dastavka', error: error.message });
+        res.status(500).json({ message: 'Error fetching Dastavka', error: error.message });
     }
 });
 
 // Update a Dastavka entry by ID
-router.put('/:id', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
+router.put('/:id', upload.array('images', 5), async (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
-    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
+    const images = req.files ? req.files.map(file => file.path) : [];
 
     try {
         const updatedDastavka = await Dastavka.findByIdAndUpdate(
             id,
-            { 
+            {
                 name,
                 description,
                 images: images.length ? images : undefined, // Update images only if they exist
@@ -85,7 +65,7 @@ router.put('/:id', upload.fields([{ name: 'images', maxCount: 5 }]), async (req,
         if (!updatedDastavka) return res.status(404).json({ message: 'Dastavka not found' });
         res.status(200).json({ message: 'Dastavka updated successfully', dastavka: updatedDastavka });
     } catch (error) {
-        res.status(500).json({ message: 'Error updating dastavka', error: error.message });
+        res.status(500).json({ message: 'Error updating Dastavka', error: error.message });
     }
 });
 
@@ -97,7 +77,7 @@ router.delete('/:id', async (req, res) => {
         if (!deletedDastavka) return res.status(404).json({ message: 'Dastavka not found' });
         res.status(200).json({ message: 'Dastavka deleted successfully', dastavka: deletedDastavka });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting dastavka', error: error.message });
+        res.status(500).json({ message: 'Error deleting Dastavka', error: error.message });
     }
 });
 
