@@ -16,6 +16,7 @@ const ZakazRouter = require('./routes/ZakazRouter')
 const AboutRouter = require('./routes/AboutRouter')
 const ContactRouter = require('./routes/ContactRouter')
 const DastavkaRouter = require('./routes/DastavkaRouter')
+const NewsCategoryRouter = require('./routes/NewsCategoryRouter')
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -27,6 +28,7 @@ app.use('/uploads', express.static('uploads'));
 // Route Setup
 app.use('/api/v1/card', ProductRouter);
 app.use('/api/v1/zayavka', ZayavkaRouter);
+app.use('/api/v1/news-category', NewsCategoryRouter);
 app.use('/api/v1/banner', bannerRouter);
 app.use('/api/v1/admin', AdminRouter);
 app.use('/api/v1/news', NewsRouter);
