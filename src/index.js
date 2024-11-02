@@ -28,7 +28,7 @@ connectDB();
 // Serving static files from 'uploads' directory
 app.use('/uploads', express.static('uploads'));
 
-// Route Setup
+// Route Setup all routes in node js 
 app.use('/api/v1/card', ProductRouter);
 app.use('/api/v1/zayavka', ZayavkaRouter);
 app.use('/api/v1/news-category', NewsCategoryRouter);
