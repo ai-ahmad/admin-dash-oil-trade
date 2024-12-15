@@ -1,11 +1,13 @@
 const express = require('express');
 const multer = require('multer');
-const mongoose = require('mongoose');
 const Contact = require('../models/ContactModels');
+const path = require('path');
 
 const router = express.Router();
 
+// Multer configuration for image upload
 const storage = multer.diskStorage({
+<<<<<<< HEAD
     destination(req, file, cb) {
         cb(null, 'uploads/contact'); // Set a single destination
     },  
@@ -13,71 +15,90 @@ const storage = multer.diskStorage({
         const timestamp = Date.now();
         cb(null, `${timestamp}-${file.originalname}`);
     },
+=======
+   destination: function (req, file, cb) {
+      cb(null, 'uploads/contact');
+   },
+   filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname));
+   }
+>>>>>>> 3b49f0b1014006e1d92887432f15c831637fd101
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
 // Create a new contact
-router.post('/create', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
-    const { name, description } = req.body;
-    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
-    try {
-        const newContact = new Contact({
-            name: name,
-            description: description,
-            images: images, // Use 'images' for the field name
-        });
-        await newContact.save();
-        res.status(201).json({ message: 'Contact created successfully', contact: newContact });
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating contact', error: error.message });
-    }
+router.post('/create', upload.array('images', 5), async (req, res) => {
+   try {
+      const imagePaths = req.files.map(file => file.path);
+      const contact = new Contact({
+         name: req.body.name,
+         description: req.body.description,
+         images: imagePaths
+      });
+      const savedContact = await contact.save();
+      res.status(201).json(savedContact);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
 });
 
 // Get all contacts
 router.get('/', async (req, res) => {
-    try {
-        const contacts = await Contact.find();
-        if (!contacts.length) return res.status(404).json({ message: 'No contacts found' });
-        res.status(200).json(contacts);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching contacts', error: error.message });
-    }
+   try {
+      const contacts = await Contact.find();
+      res.status(200).json(contacts);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
+});
+
+// Get a contact by ID
+router.get('/:id', async (req, res) => {
+   try {
+      const contact = await Contact.findById(req.params.id);
+      if (!contact) {
+         return res.status(404).json({ message: 'Contact not found' });
+      }
+      res.status(200).json(contact);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
 });
 
 // Update a contact by ID
-router.put('/:id', upload.fields([{ name: 'images', maxCount: 5 }]), async (req, res) => {
-    const { id } = req.params;
-    const { name, description } = req.body;
-    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
-
-    try {
-        const updatedContact = await Contact.findByIdAndUpdate(
-            id,
-            { 
-                name,
-                description,
-                images: images.length ? images : undefined, // Update images only if they exist
-            },
-            { new: true, omitUndefined: true }  
-        );
-        if (!updatedContact) return res.status(404).json({ message: 'Contact not found' });
-        res.status(200).json({ message: 'Contact updated successfully', contact: updatedContact });
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating contact', error: error.message });
-    }
+router.put('/:id', upload.array('images', 5), async (req, res) => {
+   try {
+      const imagePaths = req.files.map(file => file.path);
+      const updatedContact = await Contact.findByIdAndUpdate(
+         req.params.id,
+         {
+            name: req.body.name,
+            description: req.body.description,
+            images: imagePaths.length > 0 ? imagePaths : req.body.images // Keep existing if no new images uploaded
+         },
+         { new: true }
+      );
+      if (!updatedContact) {
+         return res.status(404).json({ message: 'Contact not found' });
+      }
+      res.status(200).json(updatedContact);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
 });
 
 // Delete a contact by ID
 router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const deletedContact = await Contact.findByIdAndDelete(id);
-        if (!deletedContact) return res.status(404).json({ message: 'Contact not found' });
-        res.status(200).json({ message: 'Contact deleted successfully', contact: deletedContact });
-    } catch (error) {
-        res.status(500).json({ message: 'Error deleting contact', error: error.message });
-    }
+   try {
+      const deletedContact = await Contact.findByIdAndDelete(req.params.id);
+      if (!deletedContact) {
+         return res.status(404).json({ message: 'Contact not found' });
+      }
+      res.status(200).json({ message: 'Contact deleted successfully' });
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
 });
 
 module.exports = router;

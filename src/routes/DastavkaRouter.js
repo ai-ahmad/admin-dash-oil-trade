@@ -1,22 +1,23 @@
 const express = require('express');
 const multer = require('multer');
-const mongoose = require('mongoose');
-const Dastavka = require('../models/DastavkaModels'); // Ensure correct model import
+const Dastavka = require('../models/DastavkaModels');
+const path = require('path');
 
 const router = express.Router();
 
+// Multer configuration for image uploads
 const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, 'uploads/dastavka'); // Set a single destination for all file types
-    },
-    filename(req, file, cb) {
-        const timestamp = Date.now();
-        cb(null, `${timestamp}-${file.originalname}`);
-    },
+   destination: function (req, file, cb) {
+      cb(null, 'uploads/dastavkadastavka'); // Directory to save images
+   },
+   filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname)); // Unique filename with timestamp
+   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
+<<<<<<< HEAD
 
 // Create a new Dastavka entry
 router.post('/create', upload.array('images', 5), async (req, res) => {
@@ -34,10 +35,31 @@ router.post('/create', upload.array('images', 5), async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error creating Dastavka', error: error.message });
     }
+=======
+// @route   POST /api/v1/dastavka
+// @desc    Create a new dastavka
+// @access  Public
+router.post('/', upload.array('images', 5), async (req, res) => {
+   try {
+      const imagePaths = req.files.map(file => file.path);
+      const dastavka = new Dastavka({
+         name: req.body.name,
+         description: req.body.description,
+         images: imagePaths
+      });
+      const savedDastavka = await dastavka.save();
+      res.status(201).json(savedDastavka);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
+>>>>>>> 3b49f0b1014006e1d92887432f15c831637fd101
 });
 
-// Get all Dastavka entries
+// @route   GET /api/v1/dastavka
+// @desc    Get all dastavkas
+// @access  Public
 router.get('/', async (req, res) => {
+<<<<<<< HEAD
     try {
         const dastavkaList = await Dastavka.find();
         if (!dastavkaList.length) return res.status(404).json({ message: 'No Dastavka found' });
@@ -68,10 +90,58 @@ router.put('/:id', upload.array('images', 5), async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error updating Dastavka', error: error.message });
     }
+=======
+   try {
+      const dastavkas = await Dastavka.find();
+      res.status(200).json(dastavkas);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
 });
 
-// Delete a Dastavka entry by ID
+// @route   GET /api/v1/dastavka/:id
+// @desc    Get a dastavka by ID
+// @access  Public
+router.get('/:id', async (req, res) => {
+   try {
+      const dastavka = await Dastavka.findById(req.params.id);
+      if (!dastavka) {
+         return res.status(404).json({ message: 'Dastavka not found' });
+      }
+      res.status(200).json(dastavka);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
+>>>>>>> 3b49f0b1014006e1d92887432f15c831637fd101
+});
+
+// @route   PUT /api/v1/dastavka/:id
+// @desc    Update a dastavka by ID
+// @access  Public
+router.put('/:id', upload.array('images', 5), async (req, res) => {
+   try {
+      const imagePaths = req.files.map(file => file.path);
+      const updatedDastavka = await Dastavka.findByIdAndUpdate(
+         req.params.id,
+         {
+            name: req.body.name,
+            description: req.body.description,
+            images: imagePaths.length > 0 ? imagePaths : req.body.images // Keep existing images if none uploaded
+         },
+         { new: true }
+      );
+      if (!updatedDastavka) {
+         return res.status(404).json({ message: 'Dastavka not found' });
+      }
+      res.status(200).json(updatedDastavka);
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
+});
+
+
 router.delete('/:id', async (req, res) => {
+<<<<<<< HEAD
     const { id } = req.params;
     try {
         const deletedDastavka = await Dastavka.findByIdAndDelete(id);
@@ -80,6 +150,17 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error deleting Dastavka', error: error.message });
     }
+=======
+   try {
+      const deletedDastavka = await Dastavka.findByIdAndDelete(req.params.id);
+      if (!deletedDastavka) {
+         return res.status(404).json({ message: 'Dastavka not found' });
+      }
+      res.status(200).json({ message: 'Dastavka deleted successfully' });
+   } catch (error) {
+      res.status(500).json({ message: error.message });
+   }
+>>>>>>> 3b49f0b1014006e1d92887432f15c831637fd101
 });
 
 module.exports = router;

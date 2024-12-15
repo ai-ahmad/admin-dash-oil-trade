@@ -11,7 +11,7 @@ const ContactSchemas = mongoose.Schema({
    },
    images: {
     type: [],
-    required: true,
+    required: true,  
    }
 })
 
