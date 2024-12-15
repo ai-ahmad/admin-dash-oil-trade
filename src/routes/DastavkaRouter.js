@@ -17,6 +17,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+
 // Create a new Dastavka entry
 router.post('/create', upload.array('images', 5), async (req, res) => {
     const { name, description } = req.body;

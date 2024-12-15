@@ -24,22 +24,6 @@ router.post('/create', async (req, res) => {
     }
 });
 
-// DELETE route to delete an application by ID
-router.delete('/:id', async (req, res) => {
-    const id = req.params.id;
-    console.log(`Received request to delete application with ID: ${id}`);
-    
-    try {
-        const deletedZayavka = await ZayavkaModel.findByIdAndDelete(id);
-        if (!deletedZayavka) {
-            console.log("No application found with that ID");
-            return res.status(404).json({ message: "Zayavka not found" });
-        }
-        res.status(200).json({ message: "Zayavka deleted successfully", data: deletedZayavka });
-    } catch (err) {
-        console.error('Error deleting Zayavka:', err.message);
-        res.status(500).json({ message: "Error deleting ", error: err.message });
-    }
-});
+
 
 module.exports = router;
