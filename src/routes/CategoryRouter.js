@@ -27,15 +27,16 @@ router.post('/create', async (req, res) => {
 
 
 
-router.delete('/delete', async (req, res) => {
-    const {id} = req.body
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;  // Access ID from URL params
     try {
-        await Category.findByIdAndDelete(id)
-        res.json({message: 'Deleted Successfully'})
+        await Category.findByIdAndDelete(id);
+        res.json({ message: 'Deleted Successfully' });
     } catch (err) {
-        res.status(500).json({message: err.message})
+        res.status(500).json({ message: err.message });
     }
-})
+});
+
 
 
 

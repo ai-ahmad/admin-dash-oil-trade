@@ -7,22 +7,12 @@ const router = express.Router();
 
 // Multer configuration for image upload
 const storage = multer.diskStorage({
-<<<<<<< HEAD
-    destination(req, file, cb) {
-        cb(null, 'uploads/contact'); // Set a single destination
-    },  
-    filename(req, file, cb) {
-        const timestamp = Date.now();
-        cb(null, `${timestamp}-${file.originalname}`);
-    },
-=======
    destination: function (req, file, cb) {
       cb(null, 'uploads/contact');
    },
    filename: function (req, file, cb) {
       cb(null, Date.now() + path.extname(file.originalname));
    }
->>>>>>> 3b49f0b1014006e1d92887432f15c831637fd101
 });
 
 const upload = multer({ storage: storage });
