@@ -87,7 +87,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { description } = req.body;
-  const image_url = req.file ? `/uploads/banner/${req.file.filename}` : undefined;
+  const image_url = req.file ? `uploads/banner/${req.file.filename}` : undefined;
 
   try {
     const updatedBanner = await Banner.findByIdAndUpdate(
