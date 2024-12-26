@@ -1,11 +1,9 @@
 const express = require('express');
 const multer = require('multer');
-const Product = require('../models/ProductModels'); // Ensure this is the correct path to your product model
-const path = require('path');
-
+const Product = require('../models/ProductModels');
 const router = express.Router();
 
-// Configure multer storage
+// Multer Storage Configuration
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     if (file.mimetype === 'application/pdf') {
@@ -21,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// CREATE a new product
+// CREATE a Product
 router.post(
   '/create',
   upload.fields([
@@ -29,20 +27,10 @@ router.post(
     { name: 'product_info_pdf', maxCount: 1 },
   ]),
   async (req, res) => {
-    const {
-      name,
-      category,
-      rating,
-      price,
-      volume,
-      stock,
-      ruler,
-      description,
-      discount_price,
-      promotion,
-      oils_type,
-      bestseller,
-    } = req.body;
+    console.log('Request Body:', req.body); // Debugging logs
+    console.log('Uploaded Files:', req.files);
+
+    const { name, category, rating, price, stock, description } = req.body;
 
     const mainImages = req.files['main_images']
       ? req.files['main_images'].map((file) => file.path)
@@ -57,30 +45,22 @@ router.post(
         category,
         rating,
         price,
-        volume,
         stock,
-        ruler,
         description,
-        image: {
-          main_images: mainImages,
-          all_images: mainImages, // For demonstration, using the same images array
-        },
+        image: { main_images: mainImages },
         product_info_pdf: productInfoPdf,
-        discount_price,
-        promotion,
-        bestseller,
-        oils_type,
       });
 
       const savedProduct = await newProduct.save();
       res.status(201).json({ message: 'Product created successfully', product: savedProduct });
     } catch (error) {
-      res.status(500).json({ message: 'Error creating product', error: error.message });
+      console.error('Error saving product:', error.message);
+      res.status(500).json({ message: 'Error saving product', error: error.message });
     }
   }
 );
 
-// READ all products
+// READ All Products
 router.get('/', async (req, res) => {
   try {
     const products = await Product.find();
@@ -90,7 +70,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// READ a product by ID
+// READ a Product by ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -102,7 +82,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// UPDATE a product by ID
+// UPDATE a Product by ID
 router.put(
   '/:id',
   upload.fields([
@@ -110,21 +90,11 @@ router.put(
     { name: 'product_info_pdf', maxCount: 1 },
   ]),
   async (req, res) => {
+    console.log('Request Body:', req.body); // Debugging logs
+    console.log('Uploaded Files:', req.files);
+
     const { id } = req.params;
-    const {
-      name,
-      category,
-      rating,
-      price,
-      volume,
-      stock,
-      ruler,
-      description,
-      discount_price,
-      promotion,
-      oils_type,
-      bestseller,
-    } = req.body;
+    const { name, category, rating, price, stock, description } = req.body;
 
     const mainImages = req.files['main_images']
       ? req.files['main_images'].map((file) => file.path)
@@ -141,18 +111,10 @@ router.put(
           category,
           rating,
           price,
-          volume,
           stock,
-          ruler,
           description,
-          image: mainImages
-            ? { main_images: mainImages, all_images: mainImages }
-            : undefined,
+          image: mainImages ? { main_images: mainImages } : undefined,
           product_info_pdf: productInfoPdf || undefined,
-          discount_price,
-          promotion,
-          oils_type,
-          bestseller,
         },
         { new: true, omitUndefined: true }
       );
@@ -160,12 +122,13 @@ router.put(
       if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
       res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
     } catch (error) {
+      console.error('Error updating product:', error.message);
       res.status(500).json({ message: 'Error updating product', error: error.message });
     }
   }
 );
 
-// DELETE a product by ID
+// DELETE a Product by ID
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {

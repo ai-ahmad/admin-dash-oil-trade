@@ -3,6 +3,9 @@ const express = require("express");
 const connectDB = require("./config/database");
 const cors = require("cors");
 
+
+
+
 const ProductRouter = require("./routes/ProductRouter");
 const AdminRouter = require("./routes/AdminRouter");
 const NewsRouter = require("./routes/NewsRouter");
@@ -19,15 +22,15 @@ const DastavkaRouter = require('./routes/DastavkaRouter');
 const NewsCategoryRouter = require('./routes/NewsCategoryRouter');
 const app = express();
 
-// Middleware setup
-app.use(express.json());
-app.use(cors());
 
 // Connect to MongoDB
 connectDB();
+// Middleware setup
+app.use(express.json());
+app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serving static files from 'uploads' directory
-app.use('/uploads', express.static('uploads'));
+
 
 // Route Setup
 app.use('/api/v1/card', ProductRouter);
