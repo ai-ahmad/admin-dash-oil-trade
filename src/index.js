@@ -2,9 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/database");
 const cors = require("cors");
-
-
-
+const path = require("path"); // Import path module
 
 const ProductRouter = require("./routes/ProductRouter");
 const AdminRouter = require("./routes/AdminRouter");
@@ -14,23 +12,22 @@ const BannerRouter = require("./routes/BannerRouter");
 const OtzivRouter = require("./routes/OtzivRouter");
 const CategoryRouter = require('./routes/CategoryRouter');
 const AnnonsRouter = require('./routes/AnnosRouter');
-const CursRouter = require('./routes/CursRouter');
+const CursRouter = require('./routes/CursRouter");
 const ZakazRouter = require('./routes/ZakazRouter');
 const AboutRouter = require('./routes/AboutRouter');
 const ContactRouter = require('./routes/ContactRouter');
 const DastavkaRouter = require('./routes/DastavkaRouter');
 const NewsCategoryRouter = require('./routes/NewsCategoryRouter');
-const app = express();
 
+const app = express();
 
 // Connect to MongoDB
 connectDB();
+
 // Middleware setup
 app.use(express.json());
 app.use(cors());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded files
 
 // Route Setup
 app.use('/api/v1/card', ProductRouter);
