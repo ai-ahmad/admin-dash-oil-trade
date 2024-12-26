@@ -6,7 +6,7 @@ const router = express.Router();
 // Multer Storage Configuration
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    if (file.mimetype === 'application/pdf') {
+    if (file.mimetype === 'uploads/pdf') {
       cb(null, 'uploads/pdfs');
     } else {
       cb(null, 'uploads/images');
