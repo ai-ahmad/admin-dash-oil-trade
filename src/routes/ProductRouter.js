@@ -22,13 +22,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // CREATE a new product
-router.post('/create', upload.fields([{ name: 'main_images', maxCount: 5 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
-  const { name, category, rating, price, volume, stock, ruler, description, fidbek, discount_price, promotion, oils_type, bestseller } = req.body;
-  const mainImages = req.files['main_images'] ? req.files['main_images'].map(file => file.path) : [];
-  const productInfoPdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : '';
-
-  try {
-    const newProduct = new Product({
+router.post(
+  '/create',
+  upload.fields([
+    { name: 'main_images', maxCount: 5 },
+    { name: 'product_info_pdf', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const {
       name,
       category,
       rating,
@@ -37,24 +38,47 @@ router.post('/create', upload.fields([{ name: 'main_images', maxCount: 5 }, { na
       stock,
       ruler,
       description,
-      fidbek,
-      image: {
-        main_images: mainImages,
-        all_images: mainImages, // For demonstration, using the same images array
-      },
-      product_info_pdf: productInfoPdf,
       discount_price,
       promotion,
-      bestseller,
       oils_type,
-    });
+      bestseller,
+    } = req.body;
 
-    const savedProduct = await newProduct.save();
-    res.status(201).json({ message: 'Product created successfully', product: savedProduct });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating product', error: error.message });
+    const mainImages = req.files['main_images']
+      ? req.files['main_images'].map((file) => file.path)
+      : [];
+    const productInfoPdf = req.files['product_info_pdf']
+      ? req.files['product_info_pdf'][0].path
+      : '';
+
+    try {
+      const newProduct = new Product({
+        name,
+        category,
+        rating,
+        price,
+        volume,
+        stock,
+        ruler,
+        description,
+        image: {
+          main_images: mainImages,
+          all_images: mainImages, // For demonstration, using the same images array
+        },
+        product_info_pdf: productInfoPdf,
+        discount_price,
+        promotion,
+        bestseller,
+        oils_type,
+      });
+
+      const savedProduct = await newProduct.save();
+      res.status(201).json({ message: 'Product created successfully', product: savedProduct });
+    } catch (error) {
+      res.status(500).json({ message: 'Error creating product', error: error.message });
+    }
   }
-});
+);
 
 // READ all products
 router.get('/', async (req, res) => {
@@ -79,40 +103,67 @@ router.get('/:id', async (req, res) => {
 });
 
 // UPDATE a product by ID
-router.put('/:id', upload.fields([{ name: 'main_images', maxCount: 5 }, { name: 'product_info_pdf', maxCount: 1 }]), async (req, res) => {
-  const { id } = req.params;
-  const { name, category, rating, price, volume, stock, ruler, description, discount_price, promotion, oils_type, bestseller } = req.body;
-  const mainImages = req.files['main_images'] ? req.files['main_images'].map(file => file.path) : null;
-  const productInfoPdf = req.files['product_info_pdf'] ? req.files['product_info_pdf'][0].path : null;
+router.put(
+  '/:id',
+  upload.fields([
+    { name: 'main_images', maxCount: 5 },
+    { name: 'product_info_pdf', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const { id } = req.params;
+    const {
+      name,
+      category,
+      rating,
+      price,
+      volume,
+      stock,
+      ruler,
+      description,
+      discount_price,
+      promotion,
+      oils_type,
+      bestseller,
+    } = req.body;
 
-  try {
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        name,
-        category,
-        rating,
-        price,
-        volume,
-        stock,
-        ruler,
-        description,
-        image: mainImages ? { main_images: mainImages, all_images: mainImages } : undefined,
-        product_info_pdf: productInfoPdf || undefined,
-        discount_price,
-        promotion,
-        oils_type,
-        bestseller,
-      },
-      { new: true, omitUndefined: true }
-    );
+    const mainImages = req.files['main_images']
+      ? req.files['main_images'].map((file) => file.path)
+      : null;
+    const productInfoPdf = req.files['product_info_pdf']
+      ? req.files['product_info_pdf'][0].path
+      : null;
 
-    if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
-    res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating product', error: error.message });
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        {
+          name,
+          category,
+          rating,
+          price,
+          volume,
+          stock,
+          ruler,
+          description,
+          image: mainImages
+            ? { main_images: mainImages, all_images: mainImages }
+            : undefined,
+          product_info_pdf: productInfoPdf || undefined,
+          discount_price,
+          promotion,
+          oils_type,
+          bestseller,
+        },
+        { new: true, omitUndefined: true }
+      );
+
+      if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
+      res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating product', error: error.message });
+    }
   }
-});
+);
 
 // DELETE a product by ID
 router.delete('/:id', async (req, res) => {
