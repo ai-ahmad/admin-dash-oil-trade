@@ -31,7 +31,7 @@ router.post(
     console.log("Request Body:", req.body);
     console.log("Uploaded Files:", req.files);
 
-    const { name, category, rating, price, stock, description,volume } = req.body;
+    const { name, category, rating, price, stock, description,volume,ruler } = req.body;
 
     const mainImages = req.files["main_images"]
       ? req.files["main_images"].map((file) => file.path)
@@ -109,7 +109,7 @@ router.put(
     console.log("Uploaded Files:", req.files);
 
     const { id } = req.params;
-    const { name, category, rating, price, stock,volume, description } = req.body;
+    const { name, category, rating, price, stock,volume, description,ruler } = req.body;
 
     const mainImages = req.files["main_images"]
       ? req.files["main_images"].map((file) => file.path)
@@ -128,6 +128,7 @@ router.put(
           name,
           category,
           rating,
+          ruler,
           price,
           stock,
           description,

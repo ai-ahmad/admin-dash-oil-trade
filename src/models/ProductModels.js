@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
     main_images: { type: [String], required: true },
     all_images: { type: [String], required: true },
   },
-  ruler: { type: String, required: true },
+  ruler: { type: String, required: false },
   description: { type: String, required: true },
   fidbek: { type: Array },
   discount_price: { type: String, default: 0 },
